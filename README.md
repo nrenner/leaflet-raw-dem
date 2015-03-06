@@ -44,6 +44,27 @@ Convert other formats to BIL using ``gdal_translate`` with the [GDAL EHdr](http:
     zip -j srtm_37_05_bil.zip tmp/*
     rm -r tmp
 
+## Build
+
+Requires [Node and npm](http://nodejs.org/) (or [io.js](https://iojs.org)), [Bower](http://bower.io/) and [Gulp](http://gulpjs.com/):
+
+    npm install -g bower
+    npm install -g gulp
+
+Install:
+
+    npm install
+    bower install
+
+Build:
+
+    gulp
+
+Develop:
+
+    gulp watch
+
+
 ## To-do
 
 * hgt format (basically the same with the header derived from the file name)
