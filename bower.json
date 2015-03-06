@@ -1,0 +1,46 @@
+{
+  "name": "leaflet-raw-dem",
+  "version": "0.1.0",
+  "main": "dist/leaflet-raw-dem.min.js",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "data"
+  ],
+  "dependencies": {
+    "jszip": "Stuk/jszip#~2.4.0",
+    "chroma-js": "~0.6.1",
+    "dat-gui": "~0.5.1",
+    "leaflet-plugins": "~1.2.1",
+    "Leaflet.Coordinates": "MrMufflon/Leaflet.Coordinates",
+    "Leaflet.Grid": "jieter/Leaflet.Grid",
+    "Leaflet.FileLayer": "nrenner/Leaflet.FileLayer#extend-binary",
+    "Leaflet.Graticule": "turban/Leaflet.Graticule"
+  },
+  "overrides": {
+    "dat-gui": {
+      "main": "build/dat.gui.js"
+    },
+    "leaflet-plugins": {
+      "main": "control/Permalink.js"
+    },
+    "Leaflet.Coordinates": {
+      "main": [
+        "dist/Leaflet.Coordinates-0.1.3.min.js", 
+        "dist/Leaflet.Coordinates-0.1.3.css"
+      ]
+    },
+    "Leaflet.Grid": {
+      "main": ["L.Grid.js", "L.Grid.css"]
+    },
+    "Leaflet.Graticule": {
+      "main": "L.Graticule.js"
+    }
+  }
+}
