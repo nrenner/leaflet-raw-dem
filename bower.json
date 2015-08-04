@@ -17,7 +17,7 @@
     "jszip": "Stuk/jszip#~2.4.0",
     "chroma-js": "~0.6.1",
     "dat-gui": "~0.5.1",
-    "leaflet-plugins": "~1.2.1",
+    "leaflet-plugins": "~1.3.9",
     "Leaflet.Coordinates": "MrMufflon/Leaflet.Coordinates",
     "Leaflet.Grid": "jieter/Leaflet.Grid",
     "Leaflet.FileLayer": "nrenner/Leaflet.FileLayer#extend-binary",
@@ -28,16 +28,22 @@
       "main": "build/dat.gui.js"
     },
     "leaflet-plugins": {
-      "main": "control/Permalink.js"
+      "main": [
+        "control/Permalink.js",
+        "layer/tile/Bing.js"
+      ]
     },
     "Leaflet.Coordinates": {
       "main": [
-        "dist/Leaflet.Coordinates-0.1.3.min.js", 
+        "dist/Leaflet.Coordinates-0.1.3.min.js",
         "dist/Leaflet.Coordinates-0.1.3.css"
       ]
     },
     "Leaflet.Grid": {
-      "main": ["L.Grid.js", "L.Grid.css"]
+      "main": [
+        "L.Grid.js",
+        "L.Grid.css"
+      ]
     },
     "Leaflet.Graticule": {
       "main": "L.Graticule.js"

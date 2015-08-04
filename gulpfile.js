@@ -14,7 +14,9 @@ var paths = {
             'js/CanvasLayer.js', 
             'js/DemLayer.js', 
             'js/BilDem.js', 
-            'js/OptionsControl.js']),
+            'js/OptionsControl.js',
+            'js/Bing.js',
+            'js/Util.js']),
   styles: mainBowerFiles('**/*.css'),
   dest: 'dist',
   destName: 'leaflet-raw-dem'

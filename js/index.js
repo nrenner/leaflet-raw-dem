@@ -1,4 +1,5 @@
 (function() {
+    var layerSwitcher;
 
     var map = new L.Map('map');
     map.setView([15, -10], 3);
@@ -18,7 +19,21 @@
         maxNativeZoom: 19,
         attribution : '© <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     });
-    
+
+    // COPYING: Please get your own Bing maps key at http://www.microsoft.com/maps/default.aspx
+    var bing = new L.BingLayerExt();
+    var bingKeyUrl = window.location.protocol === 'file:' ? 'bingkey.txt' : 'http://norbertrenner.de/key/bing.php';
+    L.Util.get(bingKeyUrl, function (err, key) {
+        if (err) {
+            //console.log(err.message);
+            layerSwitcher.removeLayer(bing);
+            return;
+        }
+
+        bing._key = key;
+        bing.loadMetadata();
+    });
+
     var none = L.layerGroup();
 
     var graticule = L.grid({
@@ -29,9 +44,10 @@
         interval: 1 
     });
 
-    var layerSwitcher = L.control.layers({
+    layerSwitcher = L.control.layers({
         'MapQuest': mapquest,
         'OSM': osm,
+        'Bing': bing,
         'none': none
     }, { 
         'Graticule 1°': graticule1deg,
