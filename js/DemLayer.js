@@ -71,8 +71,8 @@ L.DemLayer = L.CanvasLayer.extend({
         }
         scale = chroma.scale(this.options.colorScale).mode('lab').domain(domain);
 
-        row = this.calcPixelAxisRow(drawOrigin, se, xdim, ydim, xoff, yoff);
-        col = this.calcPixelAxisColumn(drawOrigin, se, xdim, ydim, xoff, yoff);
+        row = this.calcPixelAxisRow(range, drawOrigin, xdim, ydim, xoff, yoff);
+        col = this.calcPixelAxisColumn(range, drawOrigin, xdim, ydim, xoff, yoff);
 
         //console.time('drawGrid');
         this.drawGrid(range, row, col, scale);
@@ -120,15 +120,17 @@ L.DemLayer = L.CanvasLayer.extend({
     },
 
     // calculate x/column axis screen pixels
-    calcPixelAxisColumn: function (drawOrigin, se, xdim, ydim, xoff, yoff) {
-        var lng, seLng, ulPoint, lrPoint,
+    calcPixelAxisColumn: function (range, drawOrigin, xdim, ydim, xoff, yoff) {
+        var i, ulPoint, lrPoint,
+            maxx = range.max.x,
+            lng = drawOrigin.lng,
             col = [],
             map = this._map,
             latLng = L.latLng(drawOrigin.lat, drawOrigin.lng),
             ul = L.latLng(drawOrigin.lat + yoff, drawOrigin.lng),
             lr = L.latLng(drawOrigin.lat + yoff - ydim, drawOrigin.lng);
 
-        for (lng = drawOrigin.lng, seLng = se.lng; lng < seLng; lng += xdim) {
+        for (i = range.min.x; i <= maxx; i++) {
             latLng.lng = lng;
             ul.lng = lng - xoff;
             lr.lng = lng - xoff + xdim;
@@ -141,22 +143,25 @@ L.DemLayer = L.CanvasLayer.extend({
                 ulx: ulPoint.x,
                 width: lrPoint.x - ulPoint.x
             });
+            
+            lng += xdim;
         }
 
         return col;
     },
 
     // calculate y/row axis screen pixels
-    calcPixelAxisRow: function (drawOrigin, se, xdim, ydim, xoff, yoff) {
-        var lat, seLat, ulPoint, lrPoint,
+    calcPixelAxisRow: function (range, drawOrigin, xdim, ydim, xoff, yoff) {
+        var i, ulPoint, lrPoint,
+            maxy = range.max.y,
+            lat = drawOrigin.lat,
             row = [],
             map = this._map,
             latLng = L.latLng(drawOrigin.lat, drawOrigin.lng),
             ul = L.latLng(drawOrigin.lat, drawOrigin.lng - xoff),
             lr = L.latLng(drawOrigin.lat, drawOrigin.lng - xoff + xdim);
 
-        for (lat = drawOrigin.lat, seLat = se.lat + ydim; seLat <= lat; lat -= ydim) {
-
+        for (i = range.min.y; i <= maxy; i++) {
             latLng.lat = lat;
             ul.lat = lat + yoff;
             lr.lat = lat + yoff - ydim;
@@ -169,6 +174,8 @@ L.DemLayer = L.CanvasLayer.extend({
                 uly: ulPoint.y,
                 height: lrPoint.y - ulPoint.y
             });
+            
+            lat -= ydim;
         }
         
         return row;
