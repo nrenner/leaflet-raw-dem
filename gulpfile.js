@@ -6,6 +6,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var debug = require('gulp-debug');
 var mainBowerFiles = require('main-bower-files');
 var del = require('del');
+var inject = require('gulp-inject');
 
 var paths = {
   scripts: mainBowerFiles('**/*.js').concat(
@@ -58,6 +59,14 @@ gulp.task('clean', function(cb) {
 
 gulp.task('watch', function() {
   gulp.watch(paths.scripts, ['minify']);
+});
+
+gulp.task('inject', function () {
+  var target = gulp.src('index.html');
+  var sources =  gulp.src(paths.scripts, { base: '.', read: false });
+
+  return target.pipe(inject(sources, { relative: true }))
+    .pipe(gulp.dest('.'));
 });
 
 gulp.task('default', ['clean', 'minify', 'concat', 'styles']);
