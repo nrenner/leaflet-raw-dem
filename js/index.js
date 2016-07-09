@@ -6,19 +6,12 @@
     map.attributionControl.setPrefix('<a target="_blank" href="https://github.com/nrenner/leaflet-raw-dem">Leaflet-raw-DEM</a> | '
         + map.attributionControl.options.prefix);
 
-    var mapquest = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png', {
-        subdomains: '1234',
-        maxZoom: 22,
-        maxNativeZoom: 19,
-        attribution: "Tiles courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>"
-    });
-    mapquest.addTo(map);
-
     var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 22,
         maxNativeZoom: 19,
         attribution : '© <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     });
+    osm.addTo(map);
 
     // COPYING: Please get your own Bing maps key at http://www.microsoft.com/maps/default.aspx
     var bing = new L.BingLayerExt();
@@ -45,7 +38,6 @@
     });
 
     layerSwitcher = L.control.layers({
-        'MapQuest': mapquest,
         'OSM': osm,
         'Bing': bing,
         'none': none

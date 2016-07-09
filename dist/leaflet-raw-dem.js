@@ -14565,7 +14565,7 @@ L.Control.Permalink = L.Control.extend({
 		if (!this._map) return;
 
 		var center = this._round_point(this._map.getCenter());
-		this._update({zoom: this._map.getZoom(), lat: center.lat, lon: center.lng});
+		this._update({zoom: String(this._map.getZoom()), lat: String(center.lat), lon: String(center.lng)});
 	},
 
 	_update_href: function() {
@@ -14676,6 +14676,132 @@ L.UrlUtil = {
 		}
 		return L.Util.getParamString(p).slice(1);
 	}
+};
+
+L.BingLayer = L.TileLayer.extend({
+	options: {
+		subdomains: [0, 1, 2, 3],
+		type: 'Aerial',
+		attribution: 'Bing',
+		culture: ''
+	},
+
+	initialize: function(key, options) {
+		L.Util.setOptions(this, options);
+
+		this._key = key;
+		this._url = null;
+		this.meta = {};
+		this.loadMetadata();
+	},
+
+	tile2quad: function(x, y, z) {
+		var quad = '';
+		for (var i = z; i > 0; i--) {
+			var digit = 0;
+			var mask = 1 << (i - 1);
+			if ((x & mask) !== 0) digit += 1;
+			if ((y & mask) !== 0) digit += 2;
+			quad = quad + digit;
+		}
+		return quad;
+	},
+
+	getTileUrl: function(p, z) {
+		var zoom = this._getZoomForUrl();
+		var subdomains = this.options.subdomains,
+			s = this.options.subdomains[Math.abs((p.x + p.y) % subdomains.length)];
+		return this._url.replace('{subdomain}', s)
+				.replace('{quadkey}', this.tile2quad(p.x, p.y, zoom))
+				.replace('{culture}', this.options.culture);
+	},
+
+	loadMetadata: function() {
+		var _this = this;
+		var cbid = '_bing_metadata_' + L.Util.stamp(this);
+		window[cbid] = function (meta) {
+			_this.meta = meta;
+			window[cbid] = undefined;
+			var e = document.getElementById(cbid);
+			e.parentNode.removeChild(e);
+			if (meta.errorDetails) {
+				return;
+			}
+			_this.initMetadata();
+		};
+		var urlScheme = (document.location.protocol === 'file:') ? 'http' : document.location.protocol.slice(0, -1);
+		var url = urlScheme + '://dev.virtualearth.net/REST/v1/Imagery/Metadata/'
+					+ this.options.type + '?include=ImageryProviders&jsonp=' + cbid +
+					'&key=' + this._key + '&UriScheme=' + urlScheme;
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = url;
+		script.id = cbid;
+		document.getElementsByTagName('head')[0].appendChild(script);
+	},
+
+	initMetadata: function() {
+		var r = this.meta.resourceSets[0].resources[0];
+		this.options.subdomains = r.imageUrlSubdomains;
+		this._url = r.imageUrl;
+		this._providers = [];
+		if (r.imageryProviders) {
+			for (var i = 0; i < r.imageryProviders.length; i++) {
+				var p = r.imageryProviders[i];
+				for (var j = 0; j < p.coverageAreas.length; j++) {
+					var c = p.coverageAreas[j];
+					var coverage = {zoomMin: c.zoomMin, zoomMax: c.zoomMax, active: false};
+					var bounds = new L.LatLngBounds(
+							new L.LatLng(c.bbox[0]+0.01, c.bbox[1]+0.01),
+							new L.LatLng(c.bbox[2]-0.01, c.bbox[3]-0.01)
+					);
+					coverage.bounds = bounds;
+					coverage.attrib = p.attribution;
+					this._providers.push(coverage);
+				}
+			}
+		}
+		this._update();
+	},
+
+	_update: function() {
+		if (this._url === null || !this._map) return;
+		this._update_attribution();
+		L.TileLayer.prototype._update.apply(this, []);
+	},
+
+	_update_attribution: function() {
+		var bounds = this._map.getBounds();
+		var zoom = this._map.getZoom();
+		for (var i = 0; i < this._providers.length; i++) {
+			var p = this._providers[i];
+			if ((zoom <= p.zoomMax && zoom >= p.zoomMin) &&
+					bounds.intersects(p.bounds)) {
+				if (!p.active && this._map.attributionControl)
+					this._map.attributionControl.addAttribution(p.attrib);
+				p.active = true;
+			} else {
+				if (p.active && this._map.attributionControl)
+					this._map.attributionControl.removeAttribution(p.attrib);
+				p.active = false;
+			}
+		}
+	},
+
+	onRemove: function(map) {
+		for (var i = 0; i < this._providers.length; i++) {
+			var p = this._providers[i];
+			if (p.active && this._map.attributionControl) {
+				this._map.attributionControl.removeAttribution(p.attrib);
+				p.active = false;
+			}
+		}
+        	L.TileLayer.prototype.onRemove.apply(this, [map]);
+	}
+});
+
+L.bingLayer = function (key, options) {
+    return new L.BingLayer(key, options);
 };
 
 /*! Leaflet.Coordinates 03-07-2013 */
@@ -16017,6 +16143,7 @@ L.DemLayer = L.CanvasLayer.extend({
             this._imageData = null;
         }
         
+        // FIXME rework bounds calculations (missing last row/col, artefacts; one-offs)
         snapBounds = this._snapToRaster(bounds, dataOrigin, xdim, ydim);
         drawBounds = this._restrictToBounds(snapBounds, dataBounds);
 
@@ -16034,12 +16161,12 @@ L.DemLayer = L.CanvasLayer.extend({
         }
         scale = chroma.scale(this.options.colorScale).mode('lab').domain(domain);
 
-        row = this.calcPixelAxisRow(drawOrigin, se, xdim, ydim, xoff, yoff);
-        col = this.calcPixelAxisColumn(drawOrigin, se, xdim, ydim, xoff, yoff);
+        row = this.calcPixelAxisRow(range, drawOrigin, xdim, ydim, xoff, yoff);
+        col = this.calcPixelAxisColumn(range, drawOrigin, xdim, ydim, xoff, yoff);
 
-        console.time('drawGrid');
+        //console.time('drawGrid');
         this.drawGrid(range, row, col, scale);
-        console.timeEnd('drawGrid');
+        //console.timeEnd('drawGrid');
 
         if (this._imageData) {  
             ctx.putImageData(this._imageData, 0, 0);
@@ -16083,15 +16210,17 @@ L.DemLayer = L.CanvasLayer.extend({
     },
 
     // calculate x/column axis screen pixels
-    calcPixelAxisColumn: function (drawOrigin, se, xdim, ydim, xoff, yoff) {
-        var lng, seLng, ulPoint, lrPoint,
+    calcPixelAxisColumn: function (range, drawOrigin, xdim, ydim, xoff, yoff) {
+        var i, ulPoint, lrPoint,
+            maxx = range.max.x,
+            lng = drawOrigin.lng,
             col = [],
             map = this._map,
             latLng = L.latLng(drawOrigin.lat, drawOrigin.lng),
             ul = L.latLng(drawOrigin.lat + yoff, drawOrigin.lng),
             lr = L.latLng(drawOrigin.lat + yoff - ydim, drawOrigin.lng);
 
-        for (lng = drawOrigin.lng, seLng = se.lng; lng < seLng; lng += xdim) {
+        for (i = range.min.x; i <= maxx; i++) {
             latLng.lng = lng;
             ul.lng = lng - xoff;
             lr.lng = lng - xoff + xdim;
@@ -16104,22 +16233,25 @@ L.DemLayer = L.CanvasLayer.extend({
                 ulx: ulPoint.x,
                 width: lrPoint.x - ulPoint.x
             });
+            
+            lng += xdim;
         }
 
         return col;
     },
 
     // calculate y/row axis screen pixels
-    calcPixelAxisRow: function (drawOrigin, se, xdim, ydim, xoff, yoff) {
-        var lat, seLat, ulPoint, lrPoint,
+    calcPixelAxisRow: function (range, drawOrigin, xdim, ydim, xoff, yoff) {
+        var i, ulPoint, lrPoint,
+            maxy = range.max.y,
+            lat = drawOrigin.lat,
             row = [],
             map = this._map,
             latLng = L.latLng(drawOrigin.lat, drawOrigin.lng),
             ul = L.latLng(drawOrigin.lat, drawOrigin.lng - xoff),
             lr = L.latLng(drawOrigin.lat, drawOrigin.lng - xoff + xdim);
 
-        for (lat = drawOrigin.lat, seLat = se.lat + ydim; seLat <= lat; lat -= ydim) {
-
+        for (i = range.min.y; i <= maxy; i++) {
             latLng.lat = lat;
             ul.lat = lat + yoff;
             lr.lat = lat + yoff - ydim;
@@ -16132,6 +16264,8 @@ L.DemLayer = L.CanvasLayer.extend({
                 uly: ulPoint.y,
                 height: lrPoint.y - ulPoint.y
             });
+            
+            lat -= ydim;
         }
         
         return row;
@@ -16170,7 +16304,6 @@ L.DemLayer = L.CanvasLayer.extend({
 
                     this._drawText(zoom, c.x, r.y, val, nodata);
                 }
-
             }
         }
     },
@@ -16248,8 +16381,9 @@ L.DemLayer = L.CanvasLayer.extend({
         this._debugLayers = L.featureGroup().addTo(this._map);
         this._debugLayers.addLayer(L.rectangle(dataBounds, { color: 'green' }));
         this._debugLayers.addLayer(L.rectangle(snapBounds));
-        this._debugLayers.addLayer(L.rectangle(drawBounds, { color: 'yellow' }));
+        this._debugLayers.addLayer(L.rectangle(drawBounds, { color: 'yellow', weight: 2 }));
         this._debugLayers.addLayer(L.marker(drawOrigin));
+        console.log('dataBounds = ' + dataBounds.toBBoxString());
     }
 });
 
@@ -16596,3 +16730,68 @@ L.OptionsControl = L.Class.extend({
         }
     }
 });
+L.BingLayerExt = L.BingLayer.extend({
+    options: {
+        maxZoom: 19,
+        attribution: '<a target="_blank" href="http://www.bing.com/maps/">Bing Maps</a>'
+            + ' (<a target="_blank" href="http://go.microsoft.com/?linkid=9710837">TOU</a>)'
+    },
+
+    initialize: function(key, options) {
+        // override super to disable loadMetadata until async key load (called explicitly then)
+        L.Util.setOptions(this, options);
+
+        this._key = key;
+        this._url = null;
+        this.meta = {};
+        //this.loadMetadata();
+
+        this._logo = L.control({position: 'bottomleft'});
+        this._logo.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'bing-logo');
+            this._div.innerHTML = '<img src="http://www.microsoft.com/maps/images/branding/Bing%20logo%20white_50px-19px.png">';
+            return this._div;
+        };
+    },
+
+    onAdd: function(map) {
+        L.BingLayer.prototype.onAdd.call(this, map);
+        map.addControl(this._logo);
+    },
+
+    onRemove: function(map) {
+        L.BingLayer.prototype.onRemove.call(this, map);
+        map.removeControl(this._logo);
+    }
+});
+
+L.Util.get = function(url, cb) {
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('GET', url, true);
+    xhr.onload = function() {
+        if ((xhr.status === 200 || xhr.status === 0) && xhr.responseText) {
+            cb(null, xhr.responseText);
+        } else {
+            cb(L.Util._getError(xhr, url));
+        }
+    };
+    xhr.onerror = function() {
+        cb(L.Util._getError(xhr, url));
+    };
+    try {
+        xhr.send();
+    } catch(e) {
+        cb(e);
+    }
+};
+
+L.Util._getError = function(xhr, url) {
+    var msg = 'Error getting "' + url + '"';
+    if (xhr.responseText) {
+      msg = xhr.responseText;
+    } else if (xhr.status || xhr.statusText) {
+      msg = xhr.status + ': ' + xhr.statusText;
+    }
+    return new Error(msg);
+};
