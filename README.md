@@ -21,7 +21,7 @@ Minimal example using a 6*3 grid sample file, no extra dependencies, for develop
 
 A work in progress on hold, known issues, needs validation and testing. Provided as is, not sure if continued or maintained (low priority).
 
-[See also](#See-also) for alternatives.
+[See also](#see-also) for alternatives.
 
 ## Limitations
 
