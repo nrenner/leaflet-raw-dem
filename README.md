@@ -19,7 +19,9 @@ Minimal example using a 6*3 grid sample file, no extra dependencies, for develop
 
 ## Status
 
-Work in progress, known issues, needs validation and testing. Provided as is, not sure if continued or maintained (low priority).
+A work in progress on hold, known issues, needs validation and testing. Provided as is, not sure if continued or maintained (low priority).
+
+[See also](#See-also) for alternatives.
 
 ## Limitations
 
@@ -72,14 +74,32 @@ Develop:
 * autoScale/stats across multiple layers
 * ...
 
-## Ideas / see also
+## See also
 
-* [buddebej/ol3-dem](https://github.com/buddebej/ol3-dem) - WebGL, eu-dem, png Data-Tiles
-* [Dynamic hill shading in the browser](https://www.mapbox.com/blog/dynamic-hill-shading/)
+* [Leaflet.TileLayer.GL - Iván Sánchez Ortega](https://gitlab.com/IvanSanchez/Leaflet.TileLayer.GL): Apply WebGL shaders to your LeafletJS tile layers
+* [stuartmatthews/leaflet-geotiff](https://github.com/stuartmatthews/leaflet-geotiff): Leaflet plugin for displaying geoTIFF raster data
+* [IHCantabria/Leaflet.CanvasLayer.Field](https://github.com/IHCantabria/Leaflet.CanvasLayer.Field): Load and style Raster files in Leaflet (geotiff & asciigrid)
+* [tangrams/heightmapper](https://github.com/tangrams/heightmapper): interactive heightmaps from terrain data
+  * [What a Relief: Global Test Pilots Wanted · Mapzen](https://mapzen.com/blog/elevation/)    
+* [Weather-gridGL](http://briegn1.github.io/weather-gridGL/): Examples of how to convert gridded data into LeafletJS WebGL overlays
+* [GeoTIFF/georaster-layer-for-leaflet](https://github.com/GeoTIFF/georaster-layer-for-leaflet): Display GeoTIFFs and soon other types of raster on your Leaflet Map
+* [geotiffjs/geotiff.js](https://github.com/geotiffjs/geotiff.js): a small library to parse TIFF files for visualization or analysis
 * [xlhomme/GeotiffParser.js](https://github.com/xlhomme/GeotiffParser.js)
+
+OpenLayers
+
+* [OpenLayers Shaded Relief example](http://openlayers.org/en/latest/examples/shaded-relief.html)
+* [maptilerlabs/terrain-demos](https://github.com/maptilerlabs/terrain-demos): Demonstration of terrain RGB tiles (OL & Mapbox GL JS)
+* [Visualizing GeoTIFF Tiles with OpenLayers – EOX](https://eox.at/2018/01/visualizing-geotiff-tiles-with-openlayers/)
+* [buddebej/ol3-dem](https://github.com/buddebej/ol3-dem) - WebGL, eu-dem, png data tiles  
+  [elasticterrain](https://github.com/buddebej/elasticterrain) - SRTM 1-arc + additional, png data tiles
+
+More
+* [Realistic terrain with custom styling](https://blog.mapbox.com/realistic-terrain-with-custom-styling-ce1fe98518ab): Mapbox GL JS hillshade layer from [Terrain-RGB tiles](https://blog.mapbox.com/global-elevation-data-6689f1d0ba65) 
+  * [enable hypsometric tinting from raster-dem sources · Issue #6245 · mapbox/mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js/issues/6245)
+  * [Dynamic hill shading in the browser](https://www.mapbox.com/blog/dynamic-hill-shading/) (old demo)
 * [Terrain building with three.js](http://blog.thematicmapping.org/2013/10/terrain-building-with-threejs.html)
 * [WCS i threejs](http://labs.kartverket.no/wcs-i-threejs/) - WCS, tiff-js, three.js (FOSS4G 2014 talk)
-* [Weather-gridGL](http://briegn1.github.io/weather-gridGL/)
 * [Turfjs/turf-isobands](https://github.com/Turfjs/turf-isobands)
 * [Animated heatmaps and grids with Turf ](https://www.mapbox.com/blog/heatmaps-and-grids-with-turf/)
 
