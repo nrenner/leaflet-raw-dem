@@ -110,4 +110,12 @@
 
     L.control.scale().addTo(map);
 
+    var params = new URLSearchParams(window.location.search);
+    var url = params.get("url");
+    if (url) {
+        var demLayer = new L.BilDem(url);
+        demLayer.addTo(map);
+        optionsControl.addLayer(demLayer);
+    }
+
 })();

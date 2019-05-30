@@ -9,7 +9,10 @@ Renders the data as raster grid, similar (yet very basic) to what desktop GIS li
 
 File viewer:
 * [index.html](http://nrenner.github.io/leaflet-raw-dem/)  
-Open local zipped BIL files (*_bil.zip) using the file dialog or drag&drop
+  * Open local zipped BIL files (*_bil.zip) using the file dialog or drag&drop
+  * append `?url=` parameter to zipped BIL file, e.g.  
+    http://nrenner.github.io/leaflet-raw-dem/?url=http://norbertrenner.de/dem/cgiar-csi-4.1/srtm_40_04_bil.zip#zoom=17&lat=44.447457&lon=15.18232
+
 
 Examples:
 * [example/mallorca.html](http://nrenner.github.io/leaflet-raw-dem/example/mallorca.html) - [detail](http://nrenner.github.io/leaflet-raw-dem/example/mallorca.html#zoom=18&lat=39.828352&lon=3.115423) (building)  
